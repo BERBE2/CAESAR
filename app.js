@@ -2,7 +2,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- PWA Service Worker Registration ---
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('Service worker registered.'))
+            .then(reg => {
+                console.log('Service worker registered.');
+
+                // --- NEW: Check for updates immediately after registration ---
+                reg.addEventListener('updatefound', () => {
+                    console.log('New service worker found.');
+                    const installingWorker = reg.installing;
+                    installingWorker.addEventListener('statechange', () => {
+                        if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // A new service worker is installed and waiting to activate
+                            console.log('New content is available; please refresh.');
+                            app.showUpdateNotification();
+                        }
+                    });
+                });
+
+                // --- NEW: Manually check for updates every hour ---
+                setInterval(() => {
+                    reg.update();
+                }, 60 * 60 * 1000); // 60 minutes
+            })
             .catch(err => console.error('Service worker registration failed:', err));
     }
 
@@ -293,6 +313,49 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 3000);
         },
 
+        // --- NEW: Function to show update notification ---
+        showUpdateNotification() {
+            const updateNotification = document.createElement('div');
+            updateNotification.id = 'update-notification';
+            updateNotification.style.position = 'fixed';
+            updateNotification.style.bottom = '20px';
+            updateNotification.style.left = '50%';
+            updateNotification.style.transform = 'translateX(-50%)';
+            updateNotification.style.backgroundColor = 'var(--secondary-color)';
+            updateNotification.style.color = 'var(--light-text)';
+            updateNotification.style.padding = '1rem 1.5rem';
+            updateNotification.style.borderRadius = '10px';
+            updateNotification.style.boxShadow = '0 4px 15px rgba(0,0,0,0.4)';
+            updateNotification.style.zIndex = '10001'; // Higher than other notifications
+            updateNotification.style.display = 'flex';
+            updateNotification.style.alignItems = 'center';
+            updateNotification.style.gap = '1rem';
+            updateNotification.style.fontWeight = '600';
+            updateNotification.style.fontSize = '1rem';
+            updateNotification.style.transition = 'opacity 0.5s ease-in-out';
+            updateNotification.innerHTML = `
+                <span>يتوفر تحديث جديد للتطبيق.</span>
+                <button class="btn" style="margin: 0; padding: 0.5rem 1rem; font-size: 0.9rem; background-color: var(--primary-color); color: var(--secondary-color);">
+                    تحديث الآن
+                </button>
+            `;
+
+            const updateButton = updateNotification.querySelector('button');
+            updateButton.addEventListener('click', () => {
+                // Hide notification
+                updateNotification.style.opacity = '0';
+                setTimeout(() => {
+                    if (document.body.contains(updateNotification)) {
+                        document.body.removeChild(updateNotification);
+                    }
+                }, 500);
+                // Reload the page to get the new version
+                window.location.reload();
+            });
+
+            document.body.appendChild(updateNotification);
+        },
+
         navigate(sectionId) {
             document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
             appState.isMobileMenuOpen = false;
@@ -345,5 +408,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- EXPOSE APP FUNCTIONS GLOBALLY FOR INLINE ONCLICK HANDLERS ---
     window.app = app;
-
 });

@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const AboutSection = () => `
         <section id="about">
             <div class="container">
-                <img src="unnamed.jpg" alt="صورة داخل المحل">
+                <img src="كارت.png" alt="صورة داخل المحل">
                 <div class="about-content">
                     <h2>من نحن</h2>
                     <p>في "خياطة القيصر"، نؤمن أن الأناقة ليست مجرد ملابس، بل هي تعبير عن الهوية والذوق الرفيع. نحن نحول القماش إلى فن، والأفكار إلى واقع ملموس بفضل خبرة تمتد لسنوات وعيون لا ترى إلا التفاصيل الدقيقة.</p>
@@ -345,4 +345,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- EXPOSE APP FUNCTIONS GLOBALLY FOR INLINE ONCLICK HANDLERS ---
     window.app = app;
+
 });
